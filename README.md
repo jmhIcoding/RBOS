@@ -8,7 +8,8 @@
 	***operator***:普通操作员,不能删除文件
 2. 定义权限:
 
-  	***RIGHT_DELETE***:删除文件
+  	***DELETE_FILE***:删除文件
+	***CREATE_SOCKET***:创建socket
 
 3. 角色和权限的管理:可以把权限分配给角色;
 4. 用户角色分配:可以给用户分配一定的角色;
@@ -83,10 +84,9 @@ exit_group(0)                           = ?
 /etc/rbos/role_config :角色拥有的权限
 ```
 operator:NONE
-recycler:DELETE
+recycler:DELETE_FILE
 ```
 /etc/rbos/user_config: 用户所属的角色;默认全部为recycler,只有显式配置为operator的用户才具有相应的角色;root默认配置有recycler角色
-
 ```
 1000:operator
 ```
