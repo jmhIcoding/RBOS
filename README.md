@@ -16,9 +16,8 @@
 # 实现原理
 1. 实现LSM模块
 2. 对文件删除系统调用进行hook.
-首先需要定位出rm 命令 在删除文件是使用到的系统调用,可以通过strace命令查看。
+首先需要定位出 rm 命令在删除文件时会使用到的系统调用,可以通过strace命令最终rm命令的执行过程。
 例如：
-
 ```
 jmh@ubuntu:~$ strace rm test 
 execve("/bin/rm", ["rm", "test"], [/* 59 vars */]) = 0
@@ -65,4 +64,29 @@ close(2)                                = 0
 exit_group(0)                           = ?
 +++ exited with 0 +++
 
+```
+可以很清楚的看出 unlinkat 是删除文件时关键系统调用.通过查看unlinkat的说明,也可以佐证这一点。
+```
+       The unlinkat() system call operates in exactly the same way  as  either
+       unlink(2)  or  rmdir(2) (depending on whether or not flags includes the
+       AT_REMOVEDIR flag) except for the differences described in this  manual
+       page.
+```
+同时,unlink也是一个删除文件时常用的系统调用;
+
+因此,我们可以确定要hook的系统调用为：unlink以及unlinkat,通过在这两个函数加入自定义的删除权限判断即可。
+
+如果发现当前进程的current->uid和euid是有相应权限的,那么调用原unlink函数,返回对应unlink执行的结果；否则,返回错误信息即可。
+
+3. 将角色,权限,用户ID之间的关系作为配置文件写入文件系统内,在内核中读配置文件;配置文件的组织形式：
+
+/etc/rbos/role_config :角色拥有的权限
+```
+operator:NONE
+recycler:DELETE
+```
+/etc/rbos/user_config: 用户所属的角色;默认全部为recycler,只有显式配置为operator的用户才具有相应的角色;root默认配置有recycler角色
+
+```
+1000:operator
 ```
