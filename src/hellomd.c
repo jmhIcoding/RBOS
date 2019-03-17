@@ -260,15 +260,12 @@ static struct security_hook_list demo_hooks[]=
 	LSM_HOOK_INIT(inode_symlink,sample_inode_symlink),
 	LSM_HOOK_INIT(inode_mkdir,sample_inode_mkdir),
 	LSM_HOOK_INIT(inode_rmdir,sample_inode_rmdir)
-}
+};
 
-//insmod를 통해 sample kernel module이 Kernel 에 등록되는 경우 sample_init() 함수가 가장 먼저 호출 된다.
+
 static  int sample_init(void)
 {
-	// sample_init() 함수는 register_security() 함수를 이용하여
-	// 미리 정의된 security_operations 구조체를 kernel에 등록 한다.
-	// register_security() 함수는 security/security.c에 정의 되어 있으며
-	// hooking point(security.c에 정의 되어 있음)에서 수행된 함수로 sample_ops를 설정한다.
+
 	printk(KERN_INFO "ADD LSM SAMPLE.\n");
 	security_add_hooks(demo_hooks,ARRAY_SIZE(demo_hooks));
 
@@ -283,12 +280,10 @@ static  void sample_exit(void)
 }
 
 
-//insmod를 통해 sample kernel module이 Kernel에 등록 되는 경우 
-//module_init() 함수를 통해 sample_init() 함수가 호출 된다
+
 module_init(sample_init);
 
-//rmdod를 통해 sample kernle module이 kernle 에서 삭제되는 경우
-//module_exit() 함수를 통해 sample_exit() 함수가 호출 된다.
+
 module_exit(sample_exit);
 
 MODULE_LICENSE("GPL");
