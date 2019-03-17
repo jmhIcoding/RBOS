@@ -54,12 +54,12 @@
 #include <linux/string.h>
 #include <linux/unistd.h>
 
-#define SYSCALL_CONNECT		__NR_socketcall
-#define SYSCALL_LINK		__NR_link
-#define SYSCALL_UNLINK		__NR_unlink
-#define SYSCALL_SYMLINK		__NR_symlink
-#define SYSCALL_MKDIR		__NR_mkdir
-#define SYSCALL_RMDIR		__NR_rmdir
+#define SYSCALL_CONNECT		0
+#define SYSCALL_LINK		1
+#define SYSCALL_UNLINK		2
+#define SYSCALL_SYMLINK		3
+#define SYSCALL_MKDIR		4
+#define SYSCALL_RMDIR		5
 
 
 typedef union {
@@ -248,6 +248,15 @@ static int sample_inode_rmdir(struct inode *dir, struct dentry *dentry)
 	return check_perm(SYSCALL_RMDIR, &perm_info);
 }
 
+static struct security_hook_list demo_hooks[]
+{
+	LSM_HOOK_INIT(socket_connect,sample_socket_connect),
+	LSM_HOOK_INIT(inode_link,sample_inode_link),
+	LSM_HOOK_INIT(inode_unlink,sample_inode_unlink),
+	LSM_HOOK_INIT(inode_symlink,sample_inode_symlink),
+	LSM_HOOK_INIT(inode_mkdir,sample_inode_mkdir),
+	LSM_HOOK_INIT(inode_rmdir,sample_inode_rmdir)
+}
 static struct security_operations sample_ops = {
 	//security operations 구조체에 정의된 hooking point에 대해 hook을 정의함
 	//sample code의 경우 link, unlink, symlink, mkdir, rmdir system call 이 호출 되는 경우
@@ -270,11 +279,8 @@ static __init int sample_init(void)
 	// 미리 정의된 security_operations 구조체를 kernel에 등록 한다.
 	// register_security() 함수는 security/security.c에 정의 되어 있으며
 	// hooking point(security.c에 정의 되어 있음)에서 수행된 함수로 sample_ops를 설정한다.
-	reset_security_ops();
-	if (register_security (&sample_ops)) {
-		printk("Sample: Unable to register with kernel.\n");
-		return 0;
-	}
+	printk(KERN_INFO "ADD LSM SAMPLE.\n");
+	security_add_hooks(demo_hooks,ARRAY_SIZE(demo_hooks));
 
 	printk(KERN_INFO "Sample:  Initializing.\n");
 
