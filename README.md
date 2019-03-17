@@ -6,8 +6,8 @@
 # 功能
 1. 定义好4类角色以及对应的权限
 配置文件存放:/etc/rbos/role_config
-文件格式
 
+文件格式如下：
 ```
 角色名：权限;
 例如：
@@ -33,14 +33,15 @@ recycler:SYSCALL_TASK_CREATE,SYSCALL_RMDIR,SYSCALL_MKDIR;
   |SYSCALL_TASK_CREATE|创建子进程|
 3. 用户角色分配,可以给用户分配一定的角色;
 配置文件存放:/etc/rbos/user_config
-文件格式
+
+文件格式如下
 ```
 用户id:角色名;
 例如:
 1000:netmanager;
 1001:recycler;
 ```
-# 使用方法
+# 编译方法
 1.  下载内核源码
 ```
 cd /usr/src/
@@ -109,17 +110,15 @@ make[1]: Entering directory `/usr/src/linux-4.4'
 make[1]: Leaving directory `/usr/src/linux-4.4'
 ```
 说明编译成功。
-5. 加载驱动
+5. 加载驱动即可使RBOS生效
 进入RBOS/src/ 目录
 ```
 insmod hellomd.ko
 ```
 没有任何输出即说明没有出错。
-# 角色、权限配置文件说明
 
 # 实现原理
-1. 实现LSM模块
-2. 对文件删除系统调用进行hook.
+1. 实现LSM模块,在系统的5个系统调用上进行hook。例如对文件删除系统调用进行hook.
 首先需要定位出 rm 命令在删除文件时会使用到的系统调用,可以通过strace命令最终rm命令的执行过程。
 例如：
 ```
@@ -182,14 +181,5 @@ exit_group(0)                           = ?
 
 如果发现当前进程的current->uid和euid是有相应权限的,那么调用原unlink函数,返回对应unlink执行的结果；否则,返回错误信息即可。
 
-3. 将角色,权限,用户ID之间的关系作为配置文件写入文件系统内,在内核中读配置文件;配置文件的组织形式：
+3. 将角色,权限,用户ID之间的关系作为配置文件写入文件系统内,在内核中读配置文件
 
-/etc/rbos/role_config :角色拥有的权限
-```
-operator:NONE
-recycler:DELETE_FILE
-```
-/etc/rbos/user_config: 用户所属的角色;默认全部为recycler,只有显式配置为operator的用户才具有相应的角色;root默认配置有recycler角色
-```
-1000:operator
-```
