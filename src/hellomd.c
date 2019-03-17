@@ -54,6 +54,9 @@
 #include <linux/string.h>
 #include <linux/unistd.h>
 #include <linux/lsm_hooks.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
 
 #define SYSCALL_CONNECT		0
 #define SYSCALL_LINK		1
@@ -260,7 +263,7 @@ static struct security_hook_list demo_hooks[]=
 }
 
 //insmod를 통해 sample kernel module이 Kernel 에 등록되는 경우 sample_init() 함수가 가장 먼저 호출 된다.
-static __init int sample_init(void)
+static  int sample_init(void)
 {
 	// sample_init() 함수는 register_security() 함수를 이용하여
 	// 미리 정의된 security_operations 구조체를 kernel에 등록 한다.
@@ -274,7 +277,7 @@ static __init int sample_init(void)
 	return 0;
 }
 
-static __exit void sample_exit(void)
+static  void sample_exit(void)
 {
 	printk(KERN_INFO "Sample: Exiting.\n");	
 }
