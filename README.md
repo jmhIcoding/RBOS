@@ -1,7 +1,7 @@
 # RBOS
-	为linux内核添加简易的基于角色的访问控制功能,系统基于LSM模块,对OS做了一定的修改,将security.c里面的security_hook_heads结构 EXPORT_SYMBOLS了。
+为linux内核添加简易的基于角色的访问控制功能,系统基于LSM模块,对OS做了一定的修改,将security.c里面的security_hook_heads结构 EXPORT_SYMBOLS了。
 # 系统要求
-  	本驱动在ubuntu 14.04 LTS 可以很好的运行;
+本驱动在ubuntu 14.04 LTS 可以很好的运行;
 # 需求
 1. 定义好两类角色:
 	***recycler***:资源回收角色,可删除文件
@@ -14,7 +14,73 @@
 
 3. 角色和权限的管理:可以把权限分配给角色;
 4. 用户角色分配:可以给用户分配一定的角色;
+# 使用方法
+1.  下载内核源码
+```
+cd /usr/src/
+wget https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/linux-lts-xenial/4.4.0-31.50~14.04.1/linux-lts-xenial_4.4.0.orig.tar.gz
+tar -xvf linux-lts-xenial_4.4.0.orig.tar.gz
+```
+2.  对linux-4.4.0里面源码做修改
+/security/security.c 文件里面
+在最后添加:EXPORT_SYMBOL(security_hook_heads);
 
+3. 重新编译内核
+得到当前的内核版本：
+```
+uname -r
+```
+根据这个值可以得到当前使用的boot 配置文件
+```
+make mrproper	#取消代码树
+cp /boot/config-4.4.0-31-genric /usr/src/linux-4.4/.config #复制当前的系统的config到源码文件夹
+make menuconfig
+make clean
+make bzImage -j8
+make modules -j8
+make modules_install
+make install
+reboot
+```
+编译的时候会很长时间的,一般到10-20分钟。
+中途可能会报一些错误，主要是在makemenuconfig时需要安装libcurses,在make的时候需要安装libssl-dev.
+
+4. 编译RBOS代码
+获取源码：
+```
+git clone https://github.com/jmhIcoding/RBOS.git
+cd RBOS
+git checkout lsm_samle
+cd src
+```
+编译：
+```
+sudo make clean && sudo make
+```
+编译成功的话：
+显示：
+
+```
+jmh@ubuntu:~/RBOS/src$ sudo make clean && make
+make -C /lib/modules/4.4.0/build M=/home/jmh/RBOS/src clean
+make[1]: Entering directory `/usr/src/linux-4.4'
+  CLEAN   /home/jmh/RBOS/src/.tmp_versions
+  CLEAN   /home/jmh/RBOS/src/Module.symvers
+make[1]: Leaving directory `/usr/src/linux-4.4'
+make -C /lib/modules/4.4.0/build M=/home/jmh/RBOS/src modules
+make[1]: Entering directory `/usr/src/linux-4.4'
+  CC [M]  /home/jmh/RBOS/src/hellomd.o
+/home/jmh/RBOS/src/hellomd.c:261:2: warning: initialization from incompatible pointer type [enabled by default]
+  LSM_HOOK_INIT(inode_mkdir,sample_inode_mkdir),
+  ^
+/home/jmh/RBOS/src/hellomd.c:261:2: warning: (near initialization for ‘demo_hooks[4].hook.inode_mkdir’) [enabled by default]
+  Building modules, stage 2.
+  MODPOST 1 modules
+  CC      /home/jmh/RBOS/src/hellomd.mod.o
+  LD [M]  /home/jmh/RBOS/src/hellomd.ko
+make[1]: Leaving directory `/usr/src/linux-4.4'
+```
+说明编译成功
 # 实现原理
 1. 实现LSM模块
 2. 对文件删除系统调用进行hook.
