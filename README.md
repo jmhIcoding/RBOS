@@ -1,5 +1,5 @@
 # RBOS
-为linux内核添加简易的基于角色的访问控制功能,系统基于LSM模块,对OS做了一定的修改,将security.c里面的security_hook_heads结构 EXPORT_SYMBOLS了。
+为linux内核添加简易的基于角色的访问控制功能,系统基于LSM(Linux Security Module)模块,对OS做了一定的修改,将security.c里面的security_hook_heads结构 EXPORT_SYMBOLS了。
 # 系统要求
 本驱动在ubuntu 14.04 LTS 可以很好的运行;
 # 需求
@@ -45,6 +45,8 @@ reboot
 编译的时候会很长时间的,一般到10-20分钟。
 中途可能会报一些错误，主要是在makemenuconfig时需要安装libcurses,在make的时候需要安装libssl-dev.
 
+注意,在make install后,编译好的新内核会添加/lib/目录下,boot目录下也会有相应的镜像,但是此时需要修改grup 配置文件,然后update-grub2将系统的引导选择加载打开,这样我们才能选择以我们刚刚编译好的新内核启动。一般新内核在系统启动引导选项的Adance 里面。
+
 4. 编译RBOS代码
 获取源码：
 ```
@@ -80,7 +82,15 @@ make[1]: Entering directory `/usr/src/linux-4.4'
   LD [M]  /home/jmh/RBOS/src/hellomd.ko
 make[1]: Leaving directory `/usr/src/linux-4.4'
 ```
-说明编译成功
+说明编译成功。
+5. 加载驱动
+进入RBOS/src/ 目录
+```
+insmod hellomd.ko
+```
+没有任何输出即说明没有出错。
+# 角色、权限配置文件说明
+
 # 实现原理
 1. 实现LSM模块
 2. 对文件删除系统调用进行hook.
