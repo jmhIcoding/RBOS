@@ -4,23 +4,40 @@
 # 系统要求
 本驱动在ubuntu 14.04 amd64 可以很好的运行;
 # 功能
-1. 定义好两类角色:
-	***recycler***:资源回收角色,可删除文件
+1. 定义好4类角色以及对应的权限
+配置文件存放:/etc/rbos/role_config
+文件格式
 
-	***operator***:普通操作员,不能删除文件
-2. 定义权限:
+```
+角色名：权限;
+例如：
+recycler:SYSCALL_TASK_CREATE,SYSCALL_RMDIR,SYSCALL_MKDIR;
+```
+四个内置角色说明:
+|角色名|权限|
+|---|---|
+|recycler|SYSCALL_TASK_CREATE,SYSCALL_RMDIR,SYSCALL_MKDIR|
+|operator|SYSCALL_TASK_CREATE|
+|netmanger|SYSCALL_TASK_CREATE,SYSCALL_SOCKET,SYSCALL_CONNECT|
+|admin|SYSCALL_TASK_CREATE,SYSCALL_RMDIR,SYSCALL_MKDIR,SYSCALL_SOCKET,SYSCALL_CONNECT|
+2. 内置5种权限:
 
   |权限名|含义|
   |---|---|
+  |SYSCALL_SOCKET|调用socket,创建套接字的权限|
   |SYSCALL_CONNECT|调用connect系统调用的权限|
-  |SYSCALL_LINK|调用LINK系统调用的权限|
-  |SYSCALL_SYSLINK|调用SYMLINK的权限|
-  |SYSCALL_UNLINK|调用UNLINK的系统调用的权限|
   |SYSCALL_MKDIR|创建目录的权限|
   |SYSCALL_RMDIR|删除目录的权限|
-
-3. 角色和权限的管理:可以把权限分配给角色;
-4. 用户角色分配:可以给用户分配一定的角色;
+  |SYSCALL_TASK_CREATE|创建子进程|
+3. 用户角色分配,可以给用户分配一定的角色;
+配置文件存放:/etc/rbos/user_config
+文件格式
+```
+用户id:角色名;
+例如:
+1000:netmanager;
+1001:recycler;
+```
 # 使用方法
 1.  下载内核源码
 ```
