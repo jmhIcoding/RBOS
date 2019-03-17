@@ -1,8 +1,9 @@
 # RBOS
-为linux内核添加基于角色的访问控制功能.
+	为linux内核添加简易的基于角色的访问控制功能,系统基于LSM模块,对OS做了一定的修改,将security.c里面的security_hook_heads结构 EXPORT_SYMBOLS了。
+# 系统要求
+  	本驱动在ubuntu 14.04 LTS 可以很好的运行;
 # 需求
 1. 定义好两类角色:
-
 	***recycler***:资源回收角色,可删除文件
 
 	***operator***:普通操作员,不能删除文件
