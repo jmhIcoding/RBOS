@@ -283,4 +283,4 @@ module_exit(sample_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("JMH");
-MODULE_DESCRIPTION("A Simple LSM Driver");
+MODULE_DESCRIPTION("A LSM Driver implements RBAC");
