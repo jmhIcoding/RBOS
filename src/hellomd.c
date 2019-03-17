@@ -248,7 +248,7 @@ static int sample_inode_rmdir(struct inode *dir, struct dentry *dentry)
 	return check_perm(SYSCALL_RMDIR, &perm_info);
 }
 
-static struct security_hook_list demo_hooks[]
+static struct security_hook_list demo_hooks[]=
 {
 	LSM_HOOK_INIT(socket_connect,sample_socket_connect),
 	LSM_HOOK_INIT(inode_link,sample_inode_link),
@@ -257,20 +257,6 @@ static struct security_hook_list demo_hooks[]
 	LSM_HOOK_INIT(inode_mkdir,sample_inode_mkdir),
 	LSM_HOOK_INIT(inode_rmdir,sample_inode_rmdir)
 }
-static struct security_operations sample_ops = {
-	//security operations 구조체에 정의된 hooking point에 대해 hook을 정의함
-	//sample code의 경우 link, unlink, symlink, mkdir, rmdir system call 이 호출 되는 경우
-	//호출 된 system call의 permission을 확인 할 수 있는 sample hook을 등록함
-	.socket_connect =		sample_socket_connect,
-	.inode_link =			sample_inode_link,
-	.inode_unlink =			sample_inode_unlink,
-	.inode_symlink =		sample_inode_symlink,
-	.inode_mkdir =			sample_inode_mkdir,
-	.inode_rmdir =			sample_inode_rmdir
-
-	//system call에 대한 hook을 추가 하고자 할 경우
-	//security_operations 구조체에 정의된 member를 참조 하여 hook을 추가 할 수 있음
-};
 
 //insmod를 통해 sample kernel module이 Kernel 에 등록되는 경우 sample_init() 함수가 가장 먼저 호출 된다.
 static __init int sample_init(void)
