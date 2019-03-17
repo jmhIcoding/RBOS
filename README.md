@@ -1,16 +1,23 @@
 # RBOS
-为linux内核添加简易的基于角色的访问控制功能,系统基于LSM(Linux Security Module)模块,对OS做了一定的修改,将security.c里面的security_hook_heads结构 EXPORT_SYMBOLS了。
+ 为linux内核添加简易的基于角色的访问控制功能,系统基于LSM(Linux Security Module)模块;
+ 为了能够支持insmod和rmmod ,我们对内核做了一定的修改,将security.c里面的security_hook_heads结构 EXPORT_SYMBOLS了。
 # 系统要求
-本驱动在ubuntu 14.04 LTS 可以很好的运行;
-# 需求
+本驱动在ubuntu 14.04 amd64 可以很好的运行;
+# 功能
 1. 定义好两类角色:
 	***recycler***:资源回收角色,可删除文件
 
 	***operator***:普通操作员,不能删除文件
 2. 定义权限:
 
-  	***DELETE_FILE***:删除文件
-	***CREATE_SOCKET***:创建socket
+  |权限名|含义|
+  |---|---|
+  |SYSCALL_CONNECT|调用connect系统调用的权限|
+  |SYSCALL_LINK|调用LINK系统调用的权限|
+  |SYSCALL_SYSLINK|调用SYMLINK的权限|
+  |SYSCALL_UNLINK|调用UNLINK的系统调用的权限|
+  |SYSCALL_MKDIR|创建目录的权限|
+  |SYSCALL_RMDIR|删除目录的权限|
 
 3. 角色和权限的管理:可以把权限分配给角色;
 4. 用户角色分配:可以给用户分配一定的角色;
