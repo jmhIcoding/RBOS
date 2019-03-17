@@ -53,38 +53,53 @@
 #include <linux/unistd.h>
 #include <linux/lsm_hooks.h>
 
-#define SYSCALL_CONNECT		0
-#define SYSCALL_LINK		1
-#define SYSCALL_UNLINK		2
-#define SYSCALL_SYMLINK		3
-#define SYSCALL_MKDIR		4
-#define SYSCALL_RMDIR		5
+//定义将要hook的系统调用
+#define SYSCALL_CONNECT		0x01
+#define SYSCALL_SOCKET		0x02
+#define SYSCALL_MKDIR		0x04
+#define SYSCALL_RMDIR		0x08
+#define SYSCALL_TASK_CREATE 0x10
+
+//定义几个配置文件的路径,此处是硬编码的
+#define ROLE_CONFIG		"/etc/rbos/role_config"
+#define USER_CONFIG		"/etc/rbos/user_config"
+
+//最多支持16种角色,128个用户的分配
+#define SAMPLE_MAX_ROLE 	16
+#define SAMPLE_MAX_USER		128
+
+#define SAMPLE_MAX_BUF		1024
 
 
+//角色结构
+typedef struct __role__
+{
+	unsigned int roleid;
+	unsigned int right;
+}_ROLE_STRUCT;
+_ROLE_STRUCT all_roles[SAMPLE_MAX_ROLE]={{0,0},};
+unsigned int all_roles_cnt=0;
+
+//用户结构
+typedef struct __user__
+{
+	unsigned int userid;
+	unsigned int right;
+}_USER_STRUCT;
+_USER_STRUCT all_users[SAMPLE_MAX_USER]={{0,SYSCALL_CONNECT | SYSCALL_SOCKET | SYSCALL_MKDIR |SYSCALL_RMDIR | SYSCALL_TASK_CREATE},};
+unsigned int all_users_cnt=1;
 typedef union {
+	struct _socket_info{
+		int domain;
+		int type;
+		int protocol;
+	};
 	struct _connect_info {
 		struct socket *sock;
 		struct sockaddr *address;
 		int addrlen;
 	}connect_info;
 	
-	struct _link_info {
-		struct dentry *old_dentry;
-		struct inode *dir;
-		struct dentry *new_dentry;
-	}link_info;
-
-	struct _unlink_info {
-		struct inode *dir;
-		struct dentry *dentry;
-	}unlink_info;
-
-	struct _symlink_info {
-		struct inode *dir;
-		struct dentry *dentry;
-		const char *name;
-	}symlink_info;
-
 	struct _mkdir_info {
 		struct inode *dir;
 		struct dentry *dentry;
@@ -95,10 +110,21 @@ typedef union {
 		struct inode *dir;
 		struct dentry *dentry;
 	}rmdir_info;
+	struct _taskcreate_info{
+		unsigned long clone_flags;
+	};
 }perm_info_t;
 
 extern struct security_operations *security_ops;
-
+unsigned int sample_hash_str(char *str,int len)
+{
+	unsigned int rst =1,__PBASE__=19950817,__MODBASE__=1e9+7;
+	for(int i =0;i<len;i++)
+	{
+		rst = (rst * __PBASE__ +str[i] )%__MODBASE__;
+	}
+	return rst;
+}
 int check_connect_perm(perm_info_t *info)
 {
 	printk(KERN_WARNING "___Check connect permission___:: %s\n", __FUNCTION__);	
@@ -247,6 +273,49 @@ static int sample_inode_rmdir(struct inode *dir, struct dentry *dentry)
 	return check_perm(SYSCALL_RMDIR, &perm_info);
 }
 
+
+static void get_role_config(void)
+{
+	char buf[SAMPLE_MAX_BUF]={0};
+	struct file * f=NULL;
+	const char * filename =ROLE_CONFIG;
+	char * p;
+	int i;
+	char * line_start;
+	printk(KERN_INFO "get role config from %s.\n",filename);
+	mm_segment_t oldfs;
+	oldfs =get_fs();
+	set_fs(KERNEL_DS);
+	f =file_open(filename,O_RDONLY,0);
+	if( IS_ERR(F) || (f==NULL))
+	{
+		return -1;
+	}
+	p=buf;
+	
+	while(vfs_read(f,buf+i,1,&f->f_ops)==1)
+	{
+		if(i==SAMPLE_MAX_BUF)
+			//读满缓存区
+		{
+			break;
+		}
+		if(buf[i]==':')
+			//读到用户了
+		{
+			unsigned int hs=sample_hash_str(line_start,buf+i-line_start);
+			all_roles[all_roles_cnt].roleid =hs;
+		}
+		//TODO
+		if(buf[i]=='\n')
+			//遇到换行符了
+		{
+			
+		}
+		i++;
+	}
+	set_fs(oldfs);
+}
 static struct security_hook_list demo_hooks[]=
 {
 	LSM_HOOK_INIT(socket_connect,sample_socket_connect),
