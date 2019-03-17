@@ -53,6 +53,7 @@
 #include <linux/audit.h>
 #include <linux/string.h>
 #include <linux/unistd.h>
+#include <linux/lsm_hooks.h>
 
 #define SYSCALL_CONNECT		0
 #define SYSCALL_LINK		1
