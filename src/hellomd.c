@@ -322,8 +322,7 @@ static void get_role_config(void)
 	char token_start;
 	printk(KERN_INFO "get role config from %s.\n",filename);
 	mm_segment_t oldfs;
-	oldfs =get_fs();
-	set_fs(KERNEL_DS);
+
 	f =filp_open(filename,O_RDONLY,0);
 	if( IS_ERR(f) || (f==NULL))
 	{
@@ -334,6 +333,8 @@ static void get_role_config(void)
 	line_start = buf;
 	token_start=buf;
 	int role_index =0;
+	oldfs =get_fs();
+	set_fs(KERNEL_DS);
 	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
 	{
 		if(i==SAMPLE_MAX_BUF)
@@ -404,8 +405,9 @@ static void get_role_config(void)
 		}
 		i++;
 	}
-	filp_close(f,0);
 	set_fs(oldfs);
+	filp_close(f,0);
+
 	printk(KERN_INFO "load %d roles.\n",all_roles_cnt);
 }
 
@@ -421,8 +423,7 @@ static void get_user_config(void)
 	char token_start;
 	printk(KERN_INFO "get user config from %s.\n",filename);
 	mm_segment_t oldfs;
-	oldfs =get_fs();
-	set_fs(KERNEL_DS);
+
 	f =filp_open(filename,O_RDONLY,0);
 	if( IS_ERR(f) || (f==NULL))
 	{
@@ -433,6 +434,8 @@ static void get_user_config(void)
 	line_start = buf;
 	token_start=buf;
 	int user_index =0;
+		oldfs =get_fs();
+	set_fs(KERNEL_DS);
 	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
 	{
 		if(i==SAMPLE_MAX_BUF)
@@ -486,8 +489,9 @@ static void get_user_config(void)
 		}
 		i++;
 	}
+		set_fs(oldfs);
 	filp_close(f,0);
-	set_fs(oldfs);
+
 	printk(KERN_INFO "load %d user.\n",all_users_cnt);
 }
 
