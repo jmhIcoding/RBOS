@@ -436,8 +436,10 @@ static void get_user_config(void)
 	int user_index =0;
 		oldfs =get_fs();
 	set_fs(KERNEL_DS);
+	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
 	{
+		printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 		if(i==SAMPLE_MAX_BUF)
 			//读满缓存区
 		{
