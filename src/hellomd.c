@@ -473,10 +473,10 @@ static void get_user_config(void)
 			//读到用户了
 		{
 			unsigned int userid = sample_asc2int(line_start,buf+i-line_start);
-			printk(KERN_INFO "read userid of %d.\n",usedid);
+			printk(KERN_INFO "read userid of %d.\n",userid);
 			if(all_roles_cnt)
 			{
-				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_roles_cnt].usedid,all_user[all_users_cnt].right);
+				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_roles_cnt].usedid,all_users[all_users_cnt].right);
 			}
 			all_users[all_users_cnt++].userid =userid;
 			user_index = all_users_cnt-1;
