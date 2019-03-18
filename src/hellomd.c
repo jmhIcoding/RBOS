@@ -258,9 +258,7 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 static int sample_socket_connect(struct socket *sock, struct sockaddr *address, int addrlen)
 {
 	perm_info_t perm_info;
-	perm_info.connect_info.sock = sock;
-	perm_info.connect_info.address = address;
-	perm_info.connect_info.addrlen = addrlen;
+
 	
 	return check_perm(SYSCALL_CONNECT, &perm_info);
 }
@@ -269,9 +267,7 @@ static int sample_socket(int domain,int type,int protocol,int kern)
 //TODO 完善参数列表
 {
 	perm_info_t perm_info;
-	perm_info._socket_info.domain = domain ;
-	perm_info._socket_info.type = type;
-	perm_info._socket_info.protocol =protocol;
+
 	return check_perm(SYSCALL_SOCKET,&perm_info);
 }
 
@@ -286,9 +282,7 @@ static int sample_inode_mkdir(struct inode *dir, struct dentry *dentry, int mask
 {
 	perm_info_t perm_info; 
 
-	perm_info.mkdir_info.dir = dir;
-	perm_info.mkdir_info.dentry = dentry;
-	perm_info.mkdir_info.mask = mask;
+
 	
 	return check_perm(SYSCALL_MKDIR, &perm_info);
 	
@@ -298,8 +292,7 @@ static int sample_inode_rmdir(struct inode *dir, struct dentry *dentry)
 {
 	perm_info_t perm_info; 
 
-	perm_info.rmdir_info.dir = dir;
-	perm_info.rmdir_info.dentry = dentry;
+
 	
 	return check_perm(SYSCALL_RMDIR, &perm_info);
 }
@@ -337,19 +330,19 @@ static void get_role_config(void)
 		if(buf[i]==':')
 			//读到角色
 		{
-			if(strcmp(line_start,ROLE_ADMIN_NAME)==0)
+			if(strcmp((const char *)line_start,ROLE_ADMIN_NAME)==0)
 			{
 				role_index = ROLE_ADMIN;
 			}
-			if(strcmp(line_start,ROLE_NETMANAGER_NAME)==0)
+			if(strcmp((const char *)line_start,ROLE_NETMANAGER_NAME)==0)
 			{
 				role_index = ROLE_NETMANAGER;
 			}
-			if(strcmp(line_start,ROLE_OPERATOR_NAME)==0)
+			if(strcmp((const char *)line_start,ROLE_OPERATOR_NAME)==0)
 			{
 				role_index =ROLE_OPERATOR;
 			}
-			if(strcmp(line_start,ROLE_RECYCLER_NAME)==0)
+			if(strcmp((const char *)line_start,ROLE_RECYCLER_NAME)==0)
 			{
 				role_index=ROLE_RECYCLER;
 			}
@@ -371,24 +364,24 @@ static void get_role_config(void)
 			}
 			else
 			{
-				if(strcmp(token_start,"SYSCALL_CONNECT")==0)
+				if(strcmp((const char *)token_start,"SYSCALL_CONNECT")==0)
 					//具有SYSCALL_CONNECT权限
 				{
 					all_roles[role_index].right |=SYSCALL_CONNECT;
 				}
-				if(strcmp(token_start,"SYSCALL_SOCKET")==0)
+				if(strcmp((const char *)token_start,"SYSCALL_SOCKET")==0)
 				{
 					all_roles[role_index].right |= SYSCALL_SOCKET;
 				}
-				if(strcmp(token_start,"SYSCALL_MKDIR")==0)
+				if(strcmp((const char *)token_start,"SYSCALL_MKDIR")==0)
 				{
 					all_roles[role_index].right |=SYSCALL_MKDIR;
 				}
-				if(strcmp(token_start,"SYSCALL_RMDIR")==0)
+				if(strcmp((const char *)token_start,"SYSCALL_RMDIR")==0)
 				{
 					all_roles[role_index].right |=SYSCALL_RMDIR;
 				}
-				if(strcmp(token_start,"SYSCALL_TASK_CREATE")==0)
+				if(strcmp((const char *)token_start,"SYSCALL_TASK_CREATE")==0)
 				{
 					all_roles[role_index].right |= SYSCALL_TASK_CREATE;
 				}
@@ -457,19 +450,19 @@ static void get_user_config(void)
 			}
 			else
 			{
-				if(strcmp(token_start,ROLE_ADMIN_NAME)==0)
+				if(strcmp((const char *)token_start,ROLE_ADMIN_NAME)==0)
 				{
 					all_users[user_index].right |=all_roles[ROLE_ADMIN].right;
 				}
-				if(strcmp(token_start,ROLE_OPERATOR_NAME)==0)
+				if(strcmp((const char *)token_start,ROLE_OPERATOR_NAME)==0)
 				{
 					all_users[user_index].right |=all_roles[ROLE_OPERATOR].right;
 				}
-				if(strcmp(token_start,ROLE_RECYCLER_NAME)==0)
+				if(strcmp((const char *)token_start,ROLE_RECYCLER_NAME)==0)
 				{
 					all_users[user_index].right |=all_roles[ROLE_RECYCLER].right;
 				}
-				if(strcmp(token_start,ROLE_NETMANAGER_NAME)==0)
+				if(strcmp((const char *)token_start,ROLE_NETMANAGER_NAME)==0)
 				{
 					all_users[user_index].right |=all_roles[ROLE_NETMANAGER].right;
 				}
