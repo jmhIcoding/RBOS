@@ -219,7 +219,7 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 	
 	//获取用户有效uid,并且得到用户的权限,默认用户都拥有SYSCALL_TASK_CREATE的权限
 	new=prepare_creds();
-	euid =(unsigned int)new->euid;
+	euid =(unsigned int)(new->euid).val;
 	int i;
 	for( i=0;i<all_users_cnt;i++)
 	{
@@ -274,7 +274,7 @@ static int sample_socket(int domain,int type,int protocol,int kern)
 static int sample_task_create(unsigned long clone_flags)
 {
 	perm_info_t perm_info;
-	perm_info._taskcreate_info.clone_flags = clone_flags;
+
 	return check_perm(SYSCALL_TASK_CREATE,&perm_info);
 }
 
