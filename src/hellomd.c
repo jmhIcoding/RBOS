@@ -152,7 +152,7 @@ unsigned int sample_asc2int(char * str,int len)
 	{
 		rst=rst * 10 + str[i]-'0';
 	}
-	printk(KERN_WARNING "asc2int::%x,len:%d  str:%s.\n",rst,len,str);
+	printk(KERN_WARNING "asc2int::%d,len:%d  str:%s.\n",rst,len,str);
 	return rst;
 }
 int check_connect_perm(perm_info_t *info,unsigned int right)
@@ -355,8 +355,9 @@ static void get_role_config(void)
 			//读到角色
 		{
 			//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
-			printk(KERN_INFO "read a role of :%s.\n",line_start);
 			buf[i]=0;//把":"截断
+			printk(KERN_INFO "read a role of :%s.\n",line_start);
+			
 			all_roles_cnt++;
 			if(role_index != 0)
 			{
@@ -481,7 +482,7 @@ static void get_user_config(void)
 			printk(KERN_INFO "read userid of %d.\n",userid);
 			if(all_roles_cnt)
 			{
-				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_roles_cnt].userid,all_users[all_users_cnt].right);
+				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_roles_cnt-1].userid,all_users[all_users_cnt-1].right);
 			}
 			all_users[all_users_cnt++].userid =userid;
 			user_index = all_users_cnt-1;
