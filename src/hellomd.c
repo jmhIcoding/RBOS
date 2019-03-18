@@ -320,7 +320,7 @@ static void get_role_config(void)
 	line_start = buf;
 	token_start=buf;
 	int role_index =0;
-	while(vfs_read(f,buf+i,1,&f->f_ops)==1)
+	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
 	{
 		if(i==SAMPLE_MAX_BUF)
 			//读满缓存区
@@ -418,7 +418,7 @@ static void get_user_config(void)
 	line_start = buf;
 	token_start=buf;
 	int user_index =0;
-	while(vfs_read(f,buf+i,1,&f->f_ops)==1)
+	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
 	{
 		if(i==SAMPLE_MAX_BUF)
 			//读满缓存区
