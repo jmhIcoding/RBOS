@@ -52,6 +52,20 @@
 #include <linux/string.h>
 #include <linux/unistd.h>
 #include <linux/lsm_hooks.h>
+#include <linux/syscalls.h>
+#include <linux/kallsyms.h>
+#include <linux/sched.h>
+#include <asm/uaccess.h>
+#include <asm/unistd.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/syscalls.h>
+#include <linux/file.h>
+#include <linux/fs.h>
+#include <linux/fcntl.h>
+#include <linux/version.h>
+#include <linux/syscalls.h>
 
 //定义将要hook的系统调用
 #define SYSCALL_CONNECT		0x01
