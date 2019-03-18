@@ -476,7 +476,7 @@ static void get_user_config(void)
 			printk(KERN_INFO "read userid of %d.\n",userid);
 			if(all_roles_cnt)
 			{
-				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_roles_cnt].usedid,all_users[all_users_cnt].right);
+				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_roles_cnt].userid,all_users[all_users_cnt].right);
 			}
 			all_users[all_users_cnt++].userid =userid;
 			user_index = all_users_cnt-1;
