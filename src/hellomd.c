@@ -60,6 +60,17 @@
 #define SYSCALL_RMDIR		0x08
 #define SYSCALL_TASK_CREATE 0x10
 
+//定义四种角色
+#define ROLE_RECYCLER_NAME "recycler"
+#define ROLE_OPERATOR_NAME "operator"
+#define ROLE_NETMANAGER_NAME "netmanager"
+#define ROLE_ADMIN_NAME "admin"
+
+#define ROLE_RECYCLER 	0
+#define ROLE_OPERATOR 	1
+#define ROLE_NETMANAGER 2
+#define ROLE_ADMIN 		3
+
 //定义几个配置文件的路径,此处是硬编码的
 #define ROLE_CONFIG		"/etc/rbos/role_config"
 #define USER_CONFIG		"/etc/rbos/user_config"
@@ -86,8 +97,10 @@ typedef struct __user__
 	unsigned int userid;
 	unsigned int right;
 }_USER_STRUCT;
+
 _USER_STRUCT all_users[SAMPLE_MAX_USER]={{0,SYSCALL_CONNECT | SYSCALL_SOCKET | SYSCALL_MKDIR |SYSCALL_RMDIR | SYSCALL_TASK_CREATE},};
 unsigned int all_users_cnt=1;
+
 typedef union {
 	struct _socket_info{
 		int domain;
@@ -122,6 +135,16 @@ unsigned int sample_hash_str(char *str,int len)
 	for(int i =0;i<len;i++)
 	{
 		rst = (rst * __PBASE__ +str[i] )%__MODBASE__;
+	}
+	return rst;
+}
+unsigned int sample_asc2int(char * str,int len)
+//将整形字符串转换为整数
+{
+	unsigned int rst =0;
+	for(int i =0;i<len;i++)
+	{
+		rst=rst * 10 + str[i];
 	}
 	return rst;
 }
@@ -182,16 +205,12 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 		ret = check_connect_perm(perm_info);
 		break;
 		
-	case SYSCALL_LINK:
-		ret = check_link_perm(perm_info);
+	case SYSCALL_SOCKET:
+		ret = check_socket_perm(perm_info);
 		break;
 
-	case SYSCALL_UNLINK:
-		ret = check_unlink_perm(perm_info);
-		break;
-
-	case SYSCALL_SYMLINK:
-		ret = check_symlink_perm(perm_info);
+	case SYSCALL_TASK_CREATE:
+		ret = check_taskcreate_perm(perm_info);
 		break;
 
 	case SYSCALL_MKDIR:
@@ -216,40 +235,12 @@ static int sample_socket_connect(struct socket *sock, struct sockaddr *address, 
 	return check_perm(SYSCALL_CONNECT, &perm_info);
 }
 
-
-static int sample_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
+static int sample_socket()
+//TODO 完善参数列表
 {
-	perm_info_t perm_info; 
-
-	perm_info.link_info.old_dentry = old_dentry;
-	perm_info.link_info.dir = dir;
-	perm_info.link_info.new_dentry = new_dentry;
 	
-	return check_perm(SYSCALL_LINK, &perm_info);
-
 }
 
-static int sample_inode_unlink(struct inode *dir, struct dentry *dentry)
-{
-	perm_info_t perm_info; 
-
-	perm_info.unlink_info.dir = dir;
-	perm_info.unlink_info.dentry = dentry;
-	
-	return check_perm(SYSCALL_UNLINK, &perm_info);	
-}
-
-static int sample_inode_symlink(struct inode *dir, struct dentry *dentry, const char *name)
-{
-	perm_info_t perm_info; 
-
-	perm_info.symlink_info.dir = dir;
-	perm_info.symlink_info.dentry = dentry;
-	perm_info.symlink_info.name = name;
-	
-	return check_perm(SYSCALL_SYMLINK, &perm_info);
-
-}
 
 static int sample_inode_mkdir(struct inode *dir, struct dentry *dentry, int mask)
 {
@@ -282,6 +273,7 @@ static void get_role_config(void)
 	char * p;
 	int i;
 	char * line_start;
+	char token_start;
 	printk(KERN_INFO "get role config from %s.\n",filename);
 	mm_segment_t oldfs;
 	oldfs =get_fs();
@@ -292,7 +284,108 @@ static void get_role_config(void)
 		return -1;
 	}
 	p=buf;
-	
+	line_start = buf;
+	token_start=buf;
+	int role_index =0;
+	while(vfs_read(f,buf+i,1,&f->f_ops)==1)
+	{
+		if(i==SAMPLE_MAX_BUF)
+			//读满缓存区
+		{
+			break;
+		}
+		if(buf[i]==':')
+			//读到角色
+		{
+			if(strcmp(line_start,ROLE_ADMIN_NAME)==0)
+			{
+				role_index = ROLE_ADMIN;
+			}
+			if(strcmp(line_start,ROLE_NETMANAGER_NAME)==0)
+			{
+				role_index = ROLE_NETMANAGER;
+			}
+			if(strcmp(line_start,ROLE_OPERATOR_NAME)==0)
+			{
+				role_index =ROLE_OPERATOR;
+			}
+			if(strcmp(line_start,ROLE_RECYCLER_NAME)==0)
+			{
+				role_index=ROLE_RECYCLER;
+			}
+			token_start = buf+i+1;
+		}
+		//TODO
+		if(buf[i]=='\n')
+			//遇到换行符了
+		{
+			line_start = buf +i +1;
+		}
+		if(buf[i]==',' || buf[i]==';')
+			//到了一个token的终点
+		{
+			//[token_start,buf+i)是一个token
+			if((buf+i-token_start)<4)
+				//明显不是一个token
+			{
+				;
+			}
+			else
+			{
+				if(strcmp(token_start,"SYSCALL_CONNECT")==0)
+					//具有SYSCALL_CONNECT权限
+				{
+					all_roles[role_index].right |=SYSCALL_CONNECT;
+				}
+				if(strcmp(token_start,"SYSCALL_SOCKET")==0)
+				{
+					all_roles[role_index].right |= SYSCALL_SOCKET;
+				}
+				if(strcmp(token_start,"SYSCALL_MKDIR")==0)
+				{
+					all_roles[role_index].right |=SYSCALL_MKDIR;
+				}
+				if(strcmp(token_start,"SYSCALL_RMDIR")==0)
+				{
+					all_roles[role_index].right |=SYSCALL_RMDIR;
+				}
+				if(strcmp(token_start,"SYSCALL_TASK_CREATE")==0)
+				{
+					all_roles[role_index].right |= SYSCALL_TASK_CREATE;
+				}
+			}
+			token_start=buf+i+1;
+		}
+		i++;
+	}
+	file_close(f,0);
+	set_fs(oldfs);
+	printk(KERN_INFO "load %d roles.\n",all_roles_cnt);
+}
+
+
+static void get_user_config(void)
+{
+	char buf[SAMPLE_MAX_BUF]={0};
+	struct file * f=NULL;
+	const char * filename =USER_CONFIG;
+	char * p;
+	int i;
+	char * line_start;
+	char token_start;
+	printk(KERN_INFO "get user config from %s.\n",filename);
+	mm_segment_t oldfs;
+	oldfs =get_fs();
+	set_fs(KERNEL_DS);
+	f =file_open(filename,O_RDONLY,0);
+	if( IS_ERR(F) || (f==NULL))
+	{
+		return -1;
+	}
+	p=buf;
+	line_start = buf;
+	token_start=buf;
+	int user_index =0;
 	while(vfs_read(f,buf+i,1,&f->f_ops)==1)
 	{
 		if(i==SAMPLE_MAX_BUF)
@@ -303,19 +396,54 @@ static void get_role_config(void)
 		if(buf[i]==':')
 			//读到用户了
 		{
-			unsigned int hs=sample_hash_str(line_start,buf+i-line_start);
-			all_roles[all_roles_cnt].roleid =hs;
+			unsigned int userid = sample_asc2int(line_start,buf+i-line_start);
+			all_users[all_users_cnt++].userid =userid;
+			user_index = all_users_cnt-1;
+			token_start = buf+i+1;
 		}
 		//TODO
 		if(buf[i]=='\n')
 			//遇到换行符了
 		{
-			
+			line_start = buf +i +1;
+		}
+		if(buf[i]==',' || buf[i]==';')
+			//到了一个token的终点
+		{
+			//[token_start,buf+i)是一个token
+			if((buf+i-token_start)<5)
+				//明显不是一个token,这有可能为空
+			{
+				;
+			}
+			else
+			{
+				if(strcmp(token_start,ROLE_ADMIN_NAME)==0)
+				{
+					all_users[user_index].right |=all_roles[ROLE_ADMIN].right;
+				}
+				if(strcmp(token_start,ROLE_OPERATOR_NAME)==0)
+				{
+					all_users[user_index].right |=all_roles[ROLE_OPERATOR].right;
+				}
+				if(strcmp(token_start,ROLE_RECYCLER_NAME)==0)
+				{
+					all_users[user_index].right |=all_roles[ROLE_RECYCLER].right;
+				}
+				if(strcmp(token_start,ROLE_NETMANAGER_NAME)==0)
+				{
+					all_users[user_index].right |=all_roles[ROLE_NETMANAGER].right;
+				}
+			}
+			token_start=buf+i+1;
 		}
 		i++;
 	}
+	file_close(f,0);
 	set_fs(oldfs);
+	printk(KERN_INFO "load %d user.\n",all_users_cnt);
 }
+
 static struct security_hook_list demo_hooks[]=
 {
 	LSM_HOOK_INIT(socket_connect,sample_socket_connect),
