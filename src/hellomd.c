@@ -334,9 +334,12 @@ static void get_role_config(void)
 	token_start=buf;
 	int role_index =0;
 	oldfs =get_fs();
+	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	set_fs(KERNEL_DS);
+	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
 	{
+		printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 		if(i==SAMPLE_MAX_BUF)
 			//读满缓存区
 		{
