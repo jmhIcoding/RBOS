@@ -142,7 +142,6 @@ typedef union {
 	};
 }perm_info_t;
 
-extern struct security_operations *security_ops;
 
 unsigned int sample_asc2int(char * str,int len)
 //将整形字符串转换为整数
