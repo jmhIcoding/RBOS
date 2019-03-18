@@ -480,9 +480,9 @@ static void get_user_config(void)
 		{
 			unsigned int userid = sample_asc2int(line_start,buf+i-line_start);
 			printk(KERN_INFO "read userid of %d.\n",userid);
-			if(all_roles_cnt)
+			if(all_users_cnt)
 			{
-				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_roles_cnt-1].userid,all_users[all_users_cnt-1].right);
+				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_users_cnt-1].userid,all_users[all_users_cnt-1].right);
 			}
 			all_users[all_users_cnt++].userid =userid;
 			user_index = all_users_cnt-1;
@@ -498,6 +498,7 @@ static void get_user_config(void)
 			//到了一个token的终点
 		{
 			//[token_start,buf+i)是一个token
+			buf[i]=0;
 			if((buf+i-token_start)<5)
 				//明显不是一个token,这有可能为空
 			{
