@@ -134,7 +134,8 @@ unsigned int sample_asc2int(char * str,int len)
 //将整形字符串转换为整数
 {
 	unsigned int rst =0;
-	for(int i =0;i<len;i++)
+	int i;
+	for(i =0;i<len;i++)
 	{
 		rst=rst * 10 + str[i];
 	}
@@ -218,12 +219,13 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 	
 	//获取用户有效uid,并且得到用户的权限,默认用户都拥有SYSCALL_TASK_CREATE的权限
 	new=prepare_creds();
-	euid =new->euid;
-	for(int i=0;i<all_users_cnt;i++)
+	euid =(unsigned int)new->euid;
+	int i;
+	for( i=0;i<all_users_cnt;i++)
 	{
 		if(all_users[i].userid == euid)
 		{
-			right |= all_users[u].right;
+			right |= all_users[i].right;
 			break;
 		}
 	}
@@ -267,16 +269,16 @@ static int sample_socket(int domain,int type,int protocol,int kern)
 //TODO 完善参数列表
 {
 	perm_info_t perm_info;
-	perm_info.domain = domain ;
-	perm_info.type = type;
-	perm_info.protocol =protocol;
+	perm_info._socket_info.domain = domain ;
+	perm_info._socket_info.type = type;
+	perm_info._socket_info.protocol =protocol;
 	return check_perm(SYSCALL_SOCKET,&perm_info);
 }
 
 static int sample_task_create(unsigned long clone_flags)
 {
 	perm_info_t perm_info;
-	perm_info.clone_flags = clone_flags;
+	perm_info._taskcreate_info.clone_flags = clone_flags;
 	return check_perm(SYSCALL_TASK_CREATE,&perm_info);
 }
 
@@ -317,9 +319,9 @@ static void get_role_config(void)
 	oldfs =get_fs();
 	set_fs(KERNEL_DS);
 	f =file_open(filename,O_RDONLY,0);
-	if( IS_ERR(F) || (f==NULL))
+	if( IS_ERR(f) || (f==NULL))
 	{
-		return -1;
+		return ;
 	}
 	p=buf;
 	line_start = buf;
@@ -484,7 +486,7 @@ static void get_user_config(void)
 static struct security_hook_list demo_hooks[]=
 {
 	LSM_HOOK_INIT(socket_connect,sample_socket_connect),
-	LSM_HOOK_INIT(scoket_create,sample_socket),
+	LSM_HOOK_INIT(socket_create,sample_socket),
 	LSM_HOOK_INIT(task_create,sample_task_create),
 	LSM_HOOK_INIT(inode_mkdir,sample_inode_mkdir),
 	LSM_HOOK_INIT(inode_rmdir,sample_inode_rmdir)
