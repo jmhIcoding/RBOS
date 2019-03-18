@@ -227,14 +227,14 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 {
 	int ret=0;
 	struct cred * new;
-	unsigned int euid=0;
+	unsigned int uid=0;
 	unsigned int right=0;
 	
 	
 	//获取用户实际uid,并且得到用户的权限,默认用户都拥有SYSCALL_TASK_CREATE的权限
 	//注意并没有使用有效用户id;因为有效用户id会通过setuid位升权限
 	new=prepare_creds();
-	euid =(unsigned int)(new->uid).val;
+	uid =(unsigned int)(new->uid).val;
 	int i;
 	for( i=0;i<all_users_cnt;i++)
 	{
@@ -249,7 +249,7 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 	{
 		right=SYSCALL_CONNECT | SYSCALL_SOCKET | SYSCALL_MKDIR |SYSCALL_RMDIR | SYSCALL_TASK_CREATE;
 	}
-	printk(KERN_WARNING "____Check Permission___::%s, euid :: %d.\n", __FUNCTION__,euid);
+	printk(KERN_WARNING "____Check Permission___::%s, real uid :: %d.\n", __FUNCTION__,uid);
 	switch (syscall_type) {
 	case SYSCALL_CONNECT:
 		ret = check_connect_perm(perm_info,right);
