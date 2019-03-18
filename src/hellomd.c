@@ -323,7 +323,7 @@ static void get_role_config(void)
 	struct file * f=NULL;
 	const char * filename =ROLE_CONFIG;
 	char * p;
-	int i;
+	int i=0;
 	char * line_start;
 	char * token_start;
 	printk(KERN_INFO "get role config from %s.\n",filename);
@@ -442,7 +442,7 @@ static void get_user_config(void)
 	struct file * f=NULL;
 	const char * filename =USER_CONFIG;
 	char * p;
-	int i;
+	int i=0;
 	char * line_start;
 	char * token_start;
 	printk(KERN_INFO "get user config from %s.\n",filename);
