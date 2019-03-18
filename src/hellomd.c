@@ -80,10 +80,10 @@
 #define ROLE_NETMANAGER_NAME "netmanager"
 #define ROLE_ADMIN_NAME "admin"
 
-#define ROLE_RECYCLER 	0
-#define ROLE_OPERATOR 	1
-#define ROLE_NETMANAGER 2
-#define ROLE_ADMIN 		3
+#define ROLE_RECYCLER 	1
+#define ROLE_OPERATOR 	2
+#define ROLE_NETMANAGER 3
+#define ROLE_ADMIN 		4
 
 //定义几个配置文件的路径,此处是硬编码的
 #define ROLE_CONFIG		"/etc/rbos/role_config"
@@ -227,7 +227,7 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 	int ret=0;
 	struct cred * new;
 	unsigned int euid=0;
-	unsigned int right=SYSCALL_TASK_CREATE;
+	unsigned int right=0;
 	
 	
 	//获取用户有效uid,并且得到用户的权限,默认用户都拥有SYSCALL_TASK_CREATE的权限
@@ -241,6 +241,11 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 			right |= all_users[i].right;
 			break;
 		}
+	}
+	if(right==0)
+		//非测试用户,打开所有权限
+	{
+		right=SYSCALL_CONNECT | SYSCALL_SOCKET | SYSCALL_MKDIR |SYSCALL_RMDIR | SYSCALL_TASK_CREATE;
 	}
 	printk(KERN_WARNING "____Check Permission___::%s, euid :: %d.\n", __FUNCTION__,euid);
 	switch (syscall_type) {
@@ -334,12 +339,12 @@ static void get_role_config(void)
 	token_start=buf;
 	int role_index =0;
 	oldfs =get_fs();
-	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+	//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	set_fs(get_ds());
-	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+	//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
 	{
-		printk(KERN_INFO "%s::%d.THE SRC:%s\n",__FUNCTION__,__LINE__,buf);
+		//printk(KERN_INFO "%s::%d.THE SRC:%s\n",__FUNCTION__,__LINE__,buf);
 		if(i==SAMPLE_MAX_BUF)
 			//读满缓存区
 		{
@@ -348,22 +353,27 @@ static void get_role_config(void)
 		if(buf[i]==':')
 			//读到角色
 		{
-			printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+			//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+			printk(KERN_INFO "read a role of :%s.\n",line_start);
+			if(role_index != 0)
+			{
+				printk(KERN_INFO "last role right:%x.\n",all_roles[role_index].right);
+			}
 			if(strcmp((const char *)line_start,ROLE_ADMIN_NAME)==0)
 			{
 				role_index = ROLE_ADMIN;
 			}
-			printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+			//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			if(strcmp((const char *)line_start,ROLE_NETMANAGER_NAME)==0)
 			{
 				role_index = ROLE_NETMANAGER;
 			}
-			printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+			//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			if(strcmp((const char *)line_start,ROLE_OPERATOR_NAME)==0)
 			{
 				role_index =ROLE_OPERATOR;
 			}
-			printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+			//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			if(strcmp((const char *)line_start,ROLE_RECYCLER_NAME)==0)
 			{
 				role_index=ROLE_RECYCLER;
@@ -375,7 +385,7 @@ static void get_role_config(void)
 		{
 			line_start = buf +i +1;
 		}
-		printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+		//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 		if(buf[i]==',' || buf[i]==';')
 			//到了一个token的终点
 		{
@@ -387,28 +397,28 @@ static void get_role_config(void)
 			}
 			else
 			{
-				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+				//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_CONNECT")==0)
 					//具有SYSCALL_CONNECT权限
 				{
 					all_roles[role_index].right |=SYSCALL_CONNECT;
 				}
-				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+				//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_SOCKET")==0)
 				{
 					all_roles[role_index].right |= SYSCALL_SOCKET;
 				}
-				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+				//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_MKDIR")==0)
 				{
 					all_roles[role_index].right |=SYSCALL_MKDIR;
 				}
-				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+				//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_RMDIR")==0)
 				{
 					all_roles[role_index].right |=SYSCALL_RMDIR;
 				}
-				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+				//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_TASK_CREATE")==0)
 				{
 					all_roles[role_index].right |= SYSCALL_TASK_CREATE;
@@ -448,12 +458,12 @@ static void get_user_config(void)
 	token_start=buf;
 	int user_index =0;
 	oldfs =get_fs();
-	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+	//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	set_fs(KERNEL_DS);
-	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+	//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
 	{
-		printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
+		//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 		if(i==SAMPLE_MAX_BUF)
 			//读满缓存区
 		{
@@ -463,6 +473,11 @@ static void get_user_config(void)
 			//读到用户了
 		{
 			unsigned int userid = sample_asc2int(line_start,buf+i-line_start);
+			printk(KERN_INFO "read userid of %d.\n",usedid);
+			if(all_roles_cnt)
+			{
+				printk(KERN_INFO "last user ::%d,right:%x.\n",all_users[all_roles_cnt].usedid,all_user[all_users_cnt].right);
+			}
 			all_users[all_users_cnt++].userid =userid;
 			user_index = all_users_cnt-1;
 			token_start = buf+i+1;
