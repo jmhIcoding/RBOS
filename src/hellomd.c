@@ -325,7 +325,7 @@ static void get_role_config(void)
 	mm_segment_t oldfs;
 	oldfs =get_fs();
 	set_fs(KERNEL_DS);
-	f =file_open(filename,O_RDONLY,0);
+	f =filp_open(filename,O_RDONLY,0);
 	if( IS_ERR(f) || (f==NULL))
 	{
 		return ;
@@ -404,7 +404,7 @@ static void get_role_config(void)
 		}
 		i++;
 	}
-	file_close(f,0);
+	filp_close(f,0);
 	set_fs(oldfs);
 	printk(KERN_INFO "load %d roles.\n",all_roles_cnt);
 }
@@ -423,7 +423,7 @@ static void get_user_config(void)
 	mm_segment_t oldfs;
 	oldfs =get_fs();
 	set_fs(KERNEL_DS);
-	f =file_open(filename,O_RDONLY,0);
+	f =filp_open(filename,O_RDONLY,0);
 	if( IS_ERR(f) || (f==NULL))
 	{
 		return ;
@@ -485,7 +485,7 @@ static void get_user_config(void)
 		}
 		i++;
 	}
-	file_close(f,0);
+	filp_close(f,0);
 	set_fs(oldfs);
 	printk(KERN_INFO "load %d user.\n",all_users_cnt);
 }
