@@ -319,7 +319,7 @@ static void get_role_config(void)
 	char * p;
 	int i;
 	char * line_start;
-	char token_start;
+	char * token_start;
 	printk(KERN_INFO "get role config from %s.\n",filename);
 	mm_segment_t oldfs;
 
@@ -433,7 +433,7 @@ static void get_user_config(void)
 	char * p;
 	int i;
 	char * line_start;
-	char token_start;
+	char * token_start;
 	printk(KERN_INFO "get user config from %s.\n",filename);
 	mm_segment_t oldfs;
 
