@@ -150,7 +150,7 @@ unsigned int sample_asc2int(char * str,int len)
 	int i;
 	for(i =0;i<len;i++)
 	{
-		rst=rst * 10 + str[i];
+		rst=rst * 10 + str[i]-'0';
 	}
 	printk(KERN_WARNING "asc2int::%x,len:%d  str:%s.\n",rst,len,str);
 	return rst;
@@ -356,6 +356,7 @@ static void get_role_config(void)
 		{
 			//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			printk(KERN_INFO "read a role of :%s.\n",line_start);
+			buf[i]=0;//把":"截断
 			if(role_index != 0)
 			{
 				printk(KERN_INFO "last role right:%x.\n",all_roles[role_index].right);
@@ -391,6 +392,7 @@ static void get_role_config(void)
 			//到了一个token的终点
 		{
 			//[token_start,buf+i)是一个token
+			buf[i]=0;
 			if((buf+i-token_start)<4)
 				//明显不是一个token
 			{
@@ -398,6 +400,7 @@ static void get_role_config(void)
 			}
 			else
 			{
+				
 				//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_CONNECT")==0)
 					//具有SYSCALL_CONNECT权限
