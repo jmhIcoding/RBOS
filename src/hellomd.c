@@ -231,9 +231,10 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 	unsigned int right=0;
 	
 	
-	//获取用户有效uid,并且得到用户的权限,默认用户都拥有SYSCALL_TASK_CREATE的权限
+	//获取用户实际uid,并且得到用户的权限,默认用户都拥有SYSCALL_TASK_CREATE的权限
+	//注意并没有使用有效用户id;因为有效用户id会通过setuid位升权限
 	new=prepare_creds();
-	euid =(unsigned int)(new->euid).val;
+	euid =(unsigned int)(new->uid).val;
 	int i;
 	for( i=0;i<all_users_cnt;i++)
 	{
