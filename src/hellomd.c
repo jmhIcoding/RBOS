@@ -238,7 +238,7 @@ static int check_perm(int syscall_type, perm_info_t *perm_info)
 	int i;
 	for( i=0;i<all_users_cnt;i++)
 	{
-		if(all_users[i].userid == euid)
+		if(all_users[i].userid == uid)
 		{
 			right |= all_users[i].right;
 			break;
