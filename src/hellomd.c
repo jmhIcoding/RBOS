@@ -357,6 +357,7 @@ static void get_role_config(void)
 			//printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			printk(KERN_INFO "read a role of :%s.\n",line_start);
 			buf[i]=0;//把":"截断
+			all_roles_cnt++;
 			if(role_index != 0)
 			{
 				printk(KERN_INFO "last role right:%x.\n",all_roles[role_index].right);
