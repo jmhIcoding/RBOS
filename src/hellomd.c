@@ -434,7 +434,8 @@ static void get_user_config(void)
 	line_start = buf;
 	token_start=buf;
 	int user_index =0;
-		oldfs =get_fs();
+	oldfs =get_fs();
+	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	set_fs(KERNEL_DS);
 	printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 	while(vfs_read(f,buf+i,1,&f->f_pos)==1)
