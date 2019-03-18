@@ -417,9 +417,9 @@ static void get_user_config(void)
 	oldfs =get_fs();
 	set_fs(KERNEL_DS);
 	f =file_open(filename,O_RDONLY,0);
-	if( IS_ERR(F) || (f==NULL))
+	if( IS_ERR(f) || (f==NULL))
 	{
-		return -1;
+		return ;
 	}
 	p=buf;
 	line_start = buf;
