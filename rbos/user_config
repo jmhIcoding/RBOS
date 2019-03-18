@@ -1,2 +1,6 @@
 1000:admin;
 0:admin;
+1001:recycler;
+1002:operator;
+1003:netmanager;
+1004:admin;
