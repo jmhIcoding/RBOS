@@ -152,7 +152,7 @@ unsigned int sample_asc2int(char * str,int len)
 	{
 		rst=rst * 10 + str[i];
 	}
-	printk(KERN_WARNING "asc2int::%x\n",rst);
+	printk(KERN_WARNING "asc2int::%x,len:%d  str:%s.\n",rst,len,str);
 	return rst;
 }
 int check_connect_perm(perm_info_t *info,unsigned int right)
