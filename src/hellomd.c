@@ -348,18 +348,22 @@ static void get_role_config(void)
 		if(buf[i]==':')
 			//读到角色
 		{
+			printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			if(strcmp((const char *)line_start,ROLE_ADMIN_NAME)==0)
 			{
 				role_index = ROLE_ADMIN;
 			}
+			printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			if(strcmp((const char *)line_start,ROLE_NETMANAGER_NAME)==0)
 			{
 				role_index = ROLE_NETMANAGER;
 			}
+			printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			if(strcmp((const char *)line_start,ROLE_OPERATOR_NAME)==0)
 			{
 				role_index =ROLE_OPERATOR;
 			}
+			printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 			if(strcmp((const char *)line_start,ROLE_RECYCLER_NAME)==0)
 			{
 				role_index=ROLE_RECYCLER;
@@ -371,6 +375,7 @@ static void get_role_config(void)
 		{
 			line_start = buf +i +1;
 		}
+		printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 		if(buf[i]==',' || buf[i]==';')
 			//到了一个token的终点
 		{
@@ -382,23 +387,28 @@ static void get_role_config(void)
 			}
 			else
 			{
+				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_CONNECT")==0)
 					//具有SYSCALL_CONNECT权限
 				{
 					all_roles[role_index].right |=SYSCALL_CONNECT;
 				}
+				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_SOCKET")==0)
 				{
 					all_roles[role_index].right |= SYSCALL_SOCKET;
 				}
+				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_MKDIR")==0)
 				{
 					all_roles[role_index].right |=SYSCALL_MKDIR;
 				}
+				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_RMDIR")==0)
 				{
 					all_roles[role_index].right |=SYSCALL_RMDIR;
 				}
+				printk(KERN_INFO "%s::%d.\n",__FUNCTION__,__LINE__);
 				if(strcmp((const char *)token_start,"SYSCALL_TASK_CREATE")==0)
 				{
 					all_roles[role_index].right |= SYSCALL_TASK_CREATE;
