@@ -129,15 +129,7 @@ typedef union {
 }perm_info_t;
 
 extern struct security_operations *security_ops;
-unsigned int sample_hash_str(char *str,int len)
-{
-	unsigned int rst =1,__PBASE__=19950817,__MODBASE__=1e9+7;
-	for(int i =0;i<len;i++)
-	{
-		rst = (rst * __PBASE__ +str[i] )%__MODBASE__;
-	}
-	return rst;
-}
+
 unsigned int sample_asc2int(char * str,int len)
 //将整形字符串转换为整数
 {
@@ -148,77 +140,113 @@ unsigned int sample_asc2int(char * str,int len)
 	}
 	return rst;
 }
-int check_connect_perm(perm_info_t *info)
+int check_connect_perm(perm_info_t *info,unsigned int right)
 {
-	printk(KERN_WARNING "___Check connect permission___:: %s\n", __FUNCTION__);	
-	return 0;
+	printk(KERN_WARNING "___Check connect permission___:: %s\n", __FUNCTION__);
+	if(right & SYSCALL_CONNECT) 
+	{
+		return 0;
+	}
+	else
+	{
+		return -EINVAL;
+	}
 }
 
-int check_link_perm(perm_info_t *info)
+int check_socket_perm(perm_info_t *info,unsigned int right)
 {
-	printk(KERN_WARNING "___Check link permission___:: %s\n", __FUNCTION__);
-	printk(KERN_WARNING "link file: %s\n", info->link_info.old_dentry->d_iname);
-	printk(KERN_WARNING "______________________________________\n");
-	return 0;
+	printk(KERN_WARNING "___Check socket create permission___:: %s\n", __FUNCTION__);
+	if(right&SYSCALL_SOCKET)
+	{
+		return 0;
+	}
+	else
+	{
+		return -EINVAL;
+	}
 }
 
-int check_unlink_perm(perm_info_t *info)
+int check_taskcreate_perm(perm_info_t *info,unsigned int right)
 {
-	printk(KERN_WARNING "___Check unlink permission___:: %s\n", __FUNCTION__);
-	printk(KERN_WARNING "unlink file: %s\n", info->unlink_info.dentry->d_iname);
-	printk(KERN_WARNING "______________________________________\n");
-	return 0;
+	printk(KERN_WARNING "___Check task_create permission___:: %s\n", __FUNCTION__);
+	if(right & SYSCALL_TASK_CREATE)
+	{
+		return 0;
+	}
+	else
+	{
+		return -EINVAL;
+	}
+	
 }
 
-int check_symlink_perm(perm_info_t *info)
-{
-	printk(KERN_WARNING "___Check symlink permission___:: %s\n", __FUNCTION__);
-	printk(KERN_WARNING "symlink file: %s\n", info->symlink_info.name);
-	printk(KERN_WARNING "______________________________________\n");
-	return 0;
-}
 
-int check_mkdir_perm(perm_info_t *info)
+int check_mkdir_perm(perm_info_t *info,unsigned int right)
 {
 	printk(KERN_WARNING "___Check mkdir permission___:: %s\n", __FUNCTION__);
-	printk(KERN_WARNING "mkdir: %s\n", info->mkdir_info.dentry->d_iname);
-	printk(KERN_WARNING "______________________________________\n");
-	return 0;
+	if(right & SYSCALL_MKDIR)
+	{
+		return 0;
+	}
+	else
+	{
+		return -EINVAL;
+	}
 }
 
-int check_rmdir_perm(perm_info_t *info)
+int check_rmdir_perm(perm_info_t *info,unsigned int right)
 {
 	printk(KERN_WARNING "___Check rmdir permission___:: %s\n", __FUNCTION__);
-	printk(KERN_WARNING "rmdir: %s\n", info->rmdir_info.dentry->d_iname);
-	printk(KERN_WARNING "______________________________________\n");
-	return 0;
+	if(right & SYSCALL_RMDIR)
+	{
+		return 0;
+	}
+	else
+	{
+		return -EINVAL;
+	}
 }
 
 
 static int check_perm(int syscall_type, perm_info_t *perm_info)
 {
 	int ret=0;
-	printk(KERN_WARNING "____Check Permission___::%s\n", __FUNCTION__);
+	struct cred * new;
+	unsigned int euid=0;
+	unsigned int right=SYSCALL_TASK_CREATE;
 	
+	
+	//获取用户有效uid,并且得到用户的权限,默认用户都拥有SYSCALL_TASK_CREATE的权限
+	new=prepare_creds();
+	euid =new->euid;
+	for(int i=0;i<all_users_cnt;i++)
+	{
+		if(all_users[i].userid == euid)
+		{
+			right |= all_users[u].right;
+			break;
+		}
+	}
+	printk(KERN_WARNING "____Check Permission___::%s, euid :: %d.\n", __FUNCTION__,euid);
 	switch (syscall_type) {
 	case SYSCALL_CONNECT:
-		ret = check_connect_perm(perm_info);
+		ret = check_connect_perm(perm_info,right);
 		break;
 		
 	case SYSCALL_SOCKET:
-		ret = check_socket_perm(perm_info);
+		ret = check_socket_perm(perm_info,right);
 		break;
 
 	case SYSCALL_TASK_CREATE:
-		ret = check_taskcreate_perm(perm_info);
+		ret = check_taskcreate_perm(perm_info,right);
 		break;
 
 	case SYSCALL_MKDIR:
-		ret = check_mkdir_perm(perm_info);
+		ret = check_mkdir_perm(perm_info,right);
 		break;
 
 	case SYSCALL_RMDIR:
-		ret = check_rmdir_perm(perm_info);
+		ret = check_rmdir_perm(perm_info,right);
 		break;
 	}
 	
@@ -235,12 +263,22 @@ static int sample_socket_connect(struct socket *sock, struct sockaddr *address, 
 	return check_perm(SYSCALL_CONNECT, &perm_info);
 }
 
-static int sample_socket()
+static int sample_socket(int domain,int type,int protocol,int kern)
 //TODO 完善参数列表
 {
-	
+	perm_info_t perm_info;
+	perm_info.domain = domain ;
+	perm_info.type = type;
+	perm_info.protocol =protocol;
+	return check_perm(SYSCALL_SOCKET,&perm_info);
 }
 
+static int sample_task_create(unsigned long clone_flags)
+{
+	perm_info_t perm_info;
+	perm_info.clone_flags = clone_flags;
+	return check_perm(SYSCALL_TASK_CREATE,&perm_info);
+}
 
 static int sample_inode_mkdir(struct inode *dir, struct dentry *dentry, int mask)
 {
@@ -315,7 +353,6 @@ static void get_role_config(void)
 			}
 			token_start = buf+i+1;
 		}
-		//TODO
 		if(buf[i]=='\n')
 			//遇到换行符了
 		{
@@ -447,9 +484,8 @@ static void get_user_config(void)
 static struct security_hook_list demo_hooks[]=
 {
 	LSM_HOOK_INIT(socket_connect,sample_socket_connect),
-	LSM_HOOK_INIT(inode_link,sample_inode_link),
-	LSM_HOOK_INIT(inode_unlink,sample_inode_unlink),
-	LSM_HOOK_INIT(inode_symlink,sample_inode_symlink),
+	LSM_HOOK_INIT(scoket_create,sample_socket),
+	LSM_HOOK_INIT(task_create,sample_task_create),
 	LSM_HOOK_INIT(inode_mkdir,sample_inode_mkdir),
 	LSM_HOOK_INIT(inode_rmdir,sample_inode_rmdir)
 };
@@ -459,8 +495,11 @@ static  int sample_init(void)
 {
 
 	printk(KERN_INFO "ADD LSM SAMPLE.\n");
+	printk(KERN_INFO "LOAD ROLE CONFIG.\n");//载入role config;
+	get_role_config();
+	printk(KERN_INFO "LOAD USER CONFIG.\n");//载入user config;
+	get_user_config();
 	security_add_hooks(demo_hooks,ARRAY_SIZE(demo_hooks));
-
 	printk(KERN_INFO "Sample:  Initializing.\n");
 
 	return 0;
