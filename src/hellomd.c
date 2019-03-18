@@ -328,6 +328,7 @@ static void get_role_config(void)
 	f =filp_open(filename,O_RDONLY,0);
 	if( IS_ERR(f) || (f==NULL))
 	{
+		printk(KERN_WARNING "get role config error.\n");
 		return ;
 	}
 	p=buf;
@@ -426,6 +427,7 @@ static void get_user_config(void)
 	f =filp_open(filename,O_RDONLY,0);
 	if( IS_ERR(f) || (f==NULL))
 	{
+		printk(KERN_WARNING "get user config error.\n");
 		return ;
 	}
 	p=buf;
