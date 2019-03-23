@@ -41,6 +41,7 @@ recycler:SYSCALL_TASK_CREATE,SYSCALL_RMDIR,SYSCALL_MKDIR;
 1000:netmanager;
 1001:recycler;
 ```
+因此，需要先使用cat /etc/passwd 查看当前系统不同用户的用户ID.
 # 编译方法
 1.  下载内核源码
 ```
